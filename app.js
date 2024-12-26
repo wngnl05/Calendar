@@ -14,7 +14,7 @@ app.use(express.json());
 
 
 // routes
-app.use("/", require("./routes/indexRouter.js"));
+app.use("/calendar", require("./routes/calendarRouter.js"));
 // app.use("/login", require("./routes/loginRouter.js"));
 // app.use("/signup", require("./routes/signupRouter.js"));
 
@@ -25,9 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Helacth Check
 app.get("/health", (req, res) => { res.json({status: "ok"}) });
-
 // Redirect
-app.use((req, res, next) => { res.redirect('/') });
-
+app.use((req, res, next) => { res.redirect('/calendar') });
 // Run App
 app.listen(8080, () => { console.log(`http://localhost:8080/`) });
