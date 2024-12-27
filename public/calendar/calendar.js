@@ -59,5 +59,23 @@ nextMonthButton.addEventListener("click", () => {
 
 
 async function calendarModal(month, day){
-    document.querySelector("#calendarModal").innerHTML=`${month}월 ${day}일`
+    document.querySelector("#calendarModal").innerHTML=`
+        <span>${month}월 ${day}일<span>
+        <div class="eventContainer">
+            <input type="text">
+            <button onclick="setEvent(this)">+</button>
+        </div>
+    `;
 } 
+
+
+async function getEvent(){
+    
+}
+
+function setEvent(element) {
+    const event = element.closest(".eventContainer").querySelector("input").value;
+    if(!event){ return alert("일정을 입력해주세요.") }
+
+    console.log(event);
+}
