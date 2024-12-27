@@ -10,5 +10,3 @@
   "events": { "L": [] },
   "userPassword": { "S": "hashedPassword" }
 }
-
-## SessionTable
