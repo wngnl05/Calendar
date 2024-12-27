@@ -3,6 +3,7 @@ const oneYearLater = new Date(today.getFullYear() + 1, today.getMonth(), today.g
 
 let currentYear = today.getFullYear();
 let currentMonth = today.getMonth();
+let viewMonth = today.getMonth();
 
 const prevMonthButton = document.getElementById("prev-month");
 const nextMonthButton = document.getElementById("next-month");
@@ -33,6 +34,8 @@ function createCalendar(year, month) {
         calendarTable.appendChild(row); // Table에 1주 추가
         if (date > lastDay.getDate()) { break }
     }
+
+    getEvent(year, month) // 일정 가져오기
 }
 
 // 달력 만들기
@@ -69,8 +72,8 @@ async function calendarModal(month, day){
 } 
 
 
-async function getEvent(){
-    
+async function getEvent(year, month){
+    console.log(year, month)
 }
 
 function setEvent(element) {
