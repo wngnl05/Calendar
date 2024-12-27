@@ -3,7 +3,13 @@
 
 ## CalendarTable
 {
-  "userEmail": { "S": "lee" },
-  "events": { "L": [] },
-  "userPassword": { "S": "hashedPassword" }
+  "userEmail": { 
+    "S": "lee" 
+  },
+  "events": { 
+    "L": [] 
+  ,
+  "userPassword": { 
+    "S": "hashedPassword" 
+  }
 }
