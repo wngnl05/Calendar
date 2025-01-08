@@ -1,6 +1,7 @@
 ## How to run?
 
 ## user Table
+```
 {
   "userName": {
     "S": "lee"
@@ -9,8 +10,10 @@
     "S": "hash password"
   }
 }
+```
 
 ## schedule Table
+```
 {
   "userName": {
     "S": "lee"
@@ -25,3 +28,4 @@
     "S": "20250111"
   }
 }
+```
