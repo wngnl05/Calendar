@@ -24,6 +24,11 @@ main{
     justify-content: space-between;
 }
 
+#calendarMonth{
+    font-size: 25px;
+    font-weight: bold;
+}
+
 
 #calendarTable{
     width: 800px;

@@ -2,48 +2,60 @@ const today = new Date();
 const oneYearLater = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
 
 let currentYear = today.getFullYear();
-let currentMonth = today.getMonth();
-let viewMonth = today.getMonth();
-
-const prevMonthButton = document.getElementById("prev-month");
-const nextMonthButton = document.getElementById("next-month");
+let currentMonth = today.getMonth(); // 0부터 시작
 
 // 달력 만들기
-function createCalendar(year, month) {
+async function createCalendar(year, month) {
+    const viewMonth = month+1; // 1부터 시작
     const calendarTable = document.querySelector("#calendarTable");
     const calendarMonth = document.querySelector("#calendarMonth");
 
     // Table 초기화 & 제목 변경
     calendarTable.innerHTML = "";
-    calendarMonth.textContent = `${year}년 ${month+1}월`;
+    calendarMonth.textContent = `${year}년 ${viewMonth}월`;
+    // 일정 menu hidden & 초기화
+    document.querySelector("#scheduleMenu").style.display="none"
+    document.querySelector("#scheduleMenu #scheduleText").value=""
+    document.querySelector("#scheduleArea").innerHTML=""
+    
+    // 월별 일정 가져오기
+    const {schedules} = await fetch("/calendar/MonthSchedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dateFormat: `${year}${viewMonth.toString().padStart(2, '0')}` })
+    }).then(response => response.json())
 
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month+1, 0);
+    const lastDay = new Date(year, viewMonth, 0);
 
-    let date = 1;
+    let day = 1;
     for (let week = 0; week < 6; week++) {
         const row = document.createElement("tr");
-
-        for (let day = 0; day < 7; day++) {
-            const currentDate = new Date(year, month, date);
-            if ((week === 0 && day < firstDay.getDay()) || date > lastDay.getDate()) { row.innerHTML += `<td></td>` } // 날짜가 없으면 빈값
-            else if(currentDate < today || currentDate > oneYearLater){ row.innerHTML += `<td class="${currentDate < today || currentDate > oneYearLater ? 'disabled' : ''}"><span>${date++}</span></td>` } // 날짜가 지났으면 disable 이벤트
-            else { row.innerHTML += `<td onclick="calendarModal(${month+1}, ${date})"><span>${date++}</span></td>` } // 날짜 작성
+        for (let weekCnt = 0; weekCnt < 7; weekCnt++) { // 7일씩 반복
+            const currentDate = new Date(year, month, day);
+            const dateFormat = `${year}${viewMonth.toString().padStart(2, '0')}${day.toString().padStart(2, '0')}`
+            if ((week === 0 && weekCnt < firstDay.getDay()) || day > lastDay.getDate()) { row.innerHTML += `<td class="disabled"></td>` } // 날짜가 없으면 빈값
+            else if(currentDate < today || currentDate > oneYearLater){ row.innerHTML += `<td class="${currentDate < today || currentDate > oneYearLater ? 'disabled' : ''}"><span>${day++}</span></td>` } // 날짜가 지났으면 disable 이벤트
+            else { row.innerHTML += `<td dateFormat="${dateFormat}"><span>${day++}</span></td>` } // 날짜 작성
         }
-
         calendarTable.appendChild(row); // Table에 1주 추가
-        if (date > lastDay.getDate()) { break }
+        if (day > lastDay.getDate()) { break }
     }
 
-    getEvent(year, month) // 일정 가져오기
+    // 날짜 클릭 이벤트
+    document.querySelectorAll("td").forEach(element => { 
+        element.addEventListener("click", function(){  generateSchedule(element) }) 
+    })
+    // 일정있는 날짜 색상 추가
+    schedules.forEach(element => { document.querySelector(`td[dateFormat="${element.scheduleDate}"]`).style.backgroundColor="red" })
 }
 
 // 달력 만들기
 createCalendar(currentYear, currentMonth);
 
 
-
-prevMonthButton.addEventListener("click", () => {
+// 이전달로 달력 전환
+document.querySelector("#prevMonth").addEventListener("click", () => {
     if (currentYear > today.getFullYear() || currentMonth > today.getMonth()) {
         currentMonth = (currentMonth - 1 + 12) % 12;
         currentYear -= currentMonth === 11 ? 1 : 0;
@@ -51,7 +63,8 @@ prevMonthButton.addEventListener("click", () => {
     }
 });
 
-nextMonthButton.addEventListener("click", () => {
+// 다음달로 달력 전환
+document.querySelector("#nextMonth").addEventListener("click", () => {
     if (new Date(currentYear, currentMonth + 1) <= oneYearLater) {
         currentMonth = (currentMonth + 1) % 12;
         currentYear += currentMonth === 0 ? 1 : 0;
@@ -59,26 +72,73 @@ nextMonthButton.addEventListener("click", () => {
     }
 });
 
+// 일정 메뉴 hidden 해제
+async function generateSchedule(element){
+    const dateFormat = element.getAttribute("dateFormat")
 
+    // dataFormat 저장 & 날짜 작성 & scheduleArea 초기화
+    document.querySelector("#scheduleMenu").setAttribute("dateFormat", dateFormat)
+    document.querySelector("#scheduleMenu #scheduleDate").textContent = `${dateFormat.toString().slice(0, 4)}년 ${dateFormat.toString().slice(4, 6)}월 ${dateFormat.toString().slice(6, 8)}일`;
+    document.querySelector("#scheduleArea").innerHTML=""
+    
+    // 일정 가져오기
+    const {schedules} = await fetch("/calendar/DaySchedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dateFormat: dateFormat.toString() })
+    }).then(response => response.json())
 
-async function calendarModal(month, day){
-    document.querySelector("#calendarModal").innerHTML=`
-        <span>${month}월 ${day}일<span>
-        <div class="eventContainer">
-            <input type="text">
-            <button onclick="setEvent(this)">+</button>
-        </div>
-    `;
+    schedules.forEach(element=>{
+        const {id, schedule, scheduleDate} = element;
+        document.querySelector("#scheduleArea").innerHTML+=`
+            <div class="scheduleContainer" id="${id}" dateformat="${scheduleDate}">
+                <span>${schedule}</span>
+                <button onclick="deleteSchedule(this)">X</button>
+            </div>
+    `})
+    
+    // hidden 해제
+    document.querySelector("#scheduleMenu").style.display="block"
 } 
 
+// 일정 추가하기
+async function addSchedule() {
+    const schedule = document.querySelector("#scheduleMenu #scheduleText").value;
+    const dateformat = document.querySelector("#scheduleMenu").getAttribute("dateformat")
+    if(!schedule || !dateformat){ return alert("일정을 입력해주세요.") }
+        
+    const response = await fetch("/calendar/schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schedule, scheduleDate: dateformat })
+    })
 
-async function getEvent(year, month){
-    console.log(year, month)
+    if (response.status === 500) { return alert("나중에 다시 시도해주세요") }
+    const {id} = await response.json()
+
+    // 날짜에 색상 추가 & input 초기화 & 일정 추가
+    document.querySelector(`td[dateformat="${dateformat}"]`).style.backgroundColor="red"
+    document.querySelector("#scheduleMenu #scheduleText").value=""
+    document.querySelector("#scheduleArea").innerHTML+=`
+        <div class="scheduleContainer" id="${id}" dateformat="${dateformat}">
+            <span>${schedule}</span>
+            <button onclick="deleteSchedule(this)">X</button>
+        </div>
+    `
 }
 
-function setEvent(element) {
-    const event = element.closest(".eventContainer").querySelector("input").value;
-    if(!event){ return alert("일정을 입력해주세요.") }
+// 일정 삭제하기
+async function deleteSchedule(element){
+    const id = element.closest(".scheduleContainer").getAttribute("id");
+    const dateformat = element.closest(".scheduleContainer").getAttribute("dateformat");
 
-    console.log(event);
+    await fetch("/calendar/schedule", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+    })
+    // 일정 지우기
+    document.querySelector(`.scheduleContainer[id="${id}"]`).remove()
+    // 일정 없으면 날짜에 색상 제거
+    if(document.querySelectorAll(".scheduleContainer").length==0){ document.querySelector(`td[dateformat="${dateformat}"]`).style.backgroundColor="white" }
 }

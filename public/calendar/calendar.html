@@ -11,9 +11,9 @@
     <main>
         <div id="calendarArea">
             <header id="calendarHeader">
-                <button id="prev-month">이전</button>
+                <button id="prevMonth">이전</button>
                 <span id="calendarMonth"></span>
-                <button id="next-month">다음</button>
+                <button id="nextMonth">다음</button>
             </header>
             
             <table id="calendarTable">
@@ -22,7 +22,15 @@
             </table>
         </div>
 
-        <div id="calendarModal">
+        <div id="scheduleModal">
+            <div id="scheduleMenu" style="display: none;">
+                <span id="scheduleDate"></span>
+                <input id="scheduleText" type="text" placeholder="일정을 입력해주세요.">
+                <button id="scheduleSave" onclick="addSchedule()">+</button>
+            </div>
+
+            <div id="scheduleArea">
+            </div>
         </div>
     </main>
 
