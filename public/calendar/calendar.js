@@ -1,5 +1,6 @@
-const today = new Date();
-const oneYearLater = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+function stripTime(date) { return new Date(date.getFullYear(), date.getMonth(), date.getDate()) }
+const today = stripTime(new Date());
+const oneYearLater = stripTime(new Date(today.getFullYear() + 1, today.getMonth(), today.getDate()));
 
 let currentYear = today.getFullYear();
 let currentMonth = today.getMonth(); // 0부터 시작
@@ -32,10 +33,11 @@ async function createCalendar(year, month) {
     for (let week = 0; week < 6; week++) {
         const row = document.createElement("tr");
         for (let weekCnt = 0; weekCnt < 7; weekCnt++) { // 7일씩 반복
-            const currentDate = new Date(year, month, day);
+            const currentDate = stripTime(new Date(year, month, day));
             const dateFormat = `${year}${viewMonth.toString().padStart(2, '0')}${day.toString().padStart(2, '0')}`
-            if ((week === 0 && weekCnt < firstDay.getDay()) || day > lastDay.getDate()) { row.innerHTML += `<td class="disabled"></td>` } // 날짜가 없으면 빈값
-            else if(currentDate < today || currentDate > oneYearLater){ row.innerHTML += `<td class="${currentDate < today || currentDate > oneYearLater ? 'disabled' : ''}"><span>${day++}</span></td>` } // 날짜가 지났으면 disable 이벤트
+            if ((week === 0 && weekCnt < firstDay.getDay()) || day > lastDay.getDate()) { row.innerHTML += `<td class="noneDate"></td>` } // 날짜가 없으면 빈값
+            else if(currentDate < today || currentDate > oneYearLater){ row.innerHTML += `<td class="${currentDate < today || currentDate > oneYearLater ? 'noneDate' : ''}"><span>${day++}</span></td>` } // 날짜가 지났으면 disable 이벤트
+            else if (currentDate.getTime() === today.getTime()) { row.innerHTML += `<td dateFormat="${dateFormat}" class="today"><span>${day++}</span></td>`; } // 오늘 날짜 배경색 추가
             else { row.innerHTML += `<td dateFormat="${dateFormat}"><span>${day++}</span></td>` } // 날짜 작성
         }
         calendarTable.appendChild(row); // Table에 1주 추가
@@ -47,7 +49,7 @@ async function createCalendar(year, month) {
         element.addEventListener("click", function(){  generateSchedule(element) }) 
     })
     // 일정있는 날짜 색상 추가
-    schedules.forEach(element => { document.querySelector(`td[dateFormat="${element.scheduleDate}"]`).style.backgroundColor="red" })
+    schedules.forEach(element => { document.querySelector(`td[dateFormat="${element.scheduleDate}"] span`).setAttribute("schedule", "true") })
 }
 
 // 달력 만들기
@@ -74,6 +76,9 @@ document.querySelector("#nextMonth").addEventListener("click", () => {
 
 // 일정 메뉴 hidden 해제
 async function generateSchedule(element){
+    document.querySelectorAll("td").forEach(e => { e.classList.remove("selectedDate") })
+    element.classList.add("selectedDate");
+
     const dateFormat = element.getAttribute("dateFormat")
 
     // dataFormat 저장 & 날짜 작성 & scheduleArea 초기화
@@ -93,7 +98,7 @@ async function generateSchedule(element){
         document.querySelector("#scheduleArea").innerHTML+=`
             <div class="scheduleContainer" id="${id}" dateformat="${scheduleDate}">
                 <span>${schedule}</span>
-                <button onclick="deleteSchedule(this)">X</button>
+                <button onclick="deleteSchedule(this)">삭제</button>
             </div>
     `})
     
@@ -117,12 +122,12 @@ async function addSchedule() {
     const {id} = await response.json()
 
     // 날짜에 색상 추가 & input 초기화 & 일정 추가
-    document.querySelector(`td[dateformat="${dateformat}"]`).style.backgroundColor="red"
+    document.querySelector(`td[dateformat="${dateformat}"] span`).setAttribute("schedule", "true")
     document.querySelector("#scheduleMenu #scheduleText").value=""
     document.querySelector("#scheduleArea").innerHTML+=`
         <div class="scheduleContainer" id="${id}" dateformat="${dateformat}">
             <span>${schedule}</span>
-            <button onclick="deleteSchedule(this)">X</button>
+            <button onclick="deleteSchedule(this)">삭제</button>
         </div>
     `
 }
@@ -140,5 +145,5 @@ async function deleteSchedule(element){
     // 일정 지우기
     document.querySelector(`.scheduleContainer[id="${id}"]`).remove()
     // 일정 없으면 날짜에 색상 제거
-    if(document.querySelectorAll(".scheduleContainer").length==0){ document.querySelector(`td[dateformat="${dateformat}"]`).style.backgroundColor="white" }
+    if(document.querySelectorAll(".scheduleContainer").length==0){ document.querySelector(`td[dateformat="${dateformat}"] span`).setAttribute("schedule", "false") }
 }

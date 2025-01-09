@@ -4,15 +4,15 @@
 }
 
 
-
 main{
     display: flex;
     gap: 50px;
     margin: 50px;
+    margin-top: 100px;
 }
 
 
-
+/* 달력 */
 #calendarArea{
     display: flex;
     flex-direction: column;
@@ -59,16 +59,82 @@ main{
     gap: 5px;
 }
 
-#calendarTable td.disabled {
+
+/* 날짜가 없거나 지나면 */
+.noneDate {
     background-color: var(--lightGray);
     color: var(--gray);
 }
 
+.today {
+    background-color: #C1DBF7;
+}
+
+/* 스케줄 있으면 날짜에 이벤트 추가 */
+span[schedule="true"] {
+    text-decoration: underline;
+    font-weight: bold;
+    color: #366AAF
+}
+
+.selectedDate {
+    background-color: #E6F1FD;
+}
 
 
 
-
-#test{
+/* 스케줄 widget */
+#scheduleWidget{
     flex: 1;
-    background-color: gray;
+}
+
+/* 스케줄 메뉴 */
+#scheduleMenu{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+#scheduleDate{
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* 스케줄 메뉴 input div */
+#scheduleMenuDiv{
+    display: flex;
+    gap: 5px;
+}
+
+#scheduleText{
+    flex: 1;
+    padding: 5px 10px;
+}
+
+#scheduleSave{
+    padding: 0px 10px;
+    font-size: 20px;
+}
+
+
+/* 스케줄 컨테이너 */
+#scheduleArea{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.scheduleContainer{
+    display: flex;
+    gap: 5px;
+}
+
+.scheduleContainer span{
+    flex: 1;
+    font-size: 17px;
+}
+
+.scheduleContainer button{
+    padding: 0px 10px;
+    font-size: 18px;
 }
